@@ -1,18 +1,15 @@
 #include <stdio.h>
-#include <string.h>
-#include <math.h>
+#include <stdint.h>
+#include <stdlib.h>
 
-int main()
+uint8_t **generateKey(uint8_t key[4][4])
 {
-    int n = 4;
-    int key[4][4] = {0x00, 0xf2, 0x42, 0x01,
-                     0x12, 0x03, 0x55, 0x66,
-                     0x13, 0xa6, 0x8b, 0x92,
-                     0xe1, 0x8c, 0x11, 0x99};
+    uint8_t n = 4;
+    int i, j;
 
-    int RC[] = {0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36};
+    uint8_t RC[] = {0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36};
 
-    int S[16][16] = {
+    uint8_t S[16][16] = {
         {0x3f, 0x72, 0x1b, 0x4e, 0xac, 0x9d, 0x56, 0x8f, 0x21, 0xde, 0x43, 0x65, 0x7a, 0x90, 0xfe, 0xbc},
         {0x89, 0x01, 0x6d, 0xa5, 0xf7, 0x3c, 0x2e, 0x4a, 0xdb, 0x76, 0xc1, 0x9e, 0x08, 0x54, 0x37, 0x92},
         {0xe5, 0x7b, 0x34, 0xfa, 0x6c, 0x11, 0xd2, 0x0a, 0x98, 0xbc, 0x4f, 0x23, 0xa9, 0x57, 0x80, 0xed},
@@ -30,19 +27,27 @@ int main()
         {0x4a, 0x5f, 0xc7, 0x98, 0x73, 0xb6, 0x12, 0x0d, 0xa1, 0xe3, 0xf8, 0x42, 0x6d, 0x9a, 0x50, 0xbc},
         {0x67, 0x28, 0x0f, 0x91, 0x53, 0xe4, 0xbd, 0xfa, 0x34, 0x75, 0xac, 0xd2, 0x89, 0x4c, 0x1e, 0x6b}};
 
-    int words[4][4];
+    uint8_t words[4][4];
+
+    uint8_t **expanded = (uint8_t **)calloc(44, sizeof(uint8_t *));
+
+    for (i = 0; i < 44; i++)
+    {
+        expanded[i] = (uint8_t *)calloc(4, sizeof(uint8_t));
+    }
 
     // WORDS 0-3 USED FOR ROUND 0
 
-    for (int i = 0; i < n; i++)
+    for (i = 0; i < n; i++)
     {
-        printf("word %d: ", i);
-        for (int j = 0; j < n; j++)
+        // printf("word %d: ", i);
+        for (j = 0; j < n; j++)
         {
             words[j][i] = key[j][i];
-            printf("%X\t", key[j][i]);
+            expanded[i][j] = words[j][i];
+            // printf("%X\t", key[j][i]);
         }
-        printf("\n");
+        // printf("\n");
     }
 
     // generate new words
@@ -55,62 +60,38 @@ int main()
 
         int temp;
         temp = words[0][3];
-        for (int j = 0; j < n - 1; j++)
+        for (i = 0; i < n - 1; i++)
         {
-            words[j][3] = words[j + 1][3];
+            words[i][3] = words[i + 1][3];
         }
         words[n - 1][3] = temp;
-
-        // printf("after lcs\nword 3: ");
-
-        // for (int j = 0; j < n; j++)
-        // {
-        //     printf("%X\t", words[j][3]);
-        // }
-        // printf("\n");
 
         // s box substituition
         int x, y;
 
-        for (int i = 0; i < n; i++)
+        for (i = 0; i < n; i++)
         {
             x = words[i][3] / 16;
             y = words[i][3] % 16;
             words[i][3] = S[x][y];
         }
 
-        // printf("after Substitution\nword 3: ");
-
-        // for (int j = 0; j < n; j++)
-        // {
-        //     printf("%X\t", words[j][3]);
-        // }
-        // printf("\n");
-
         // rc xor
 
         words[0][3] ^= RC[round];
-
-        // printf("after rc xor\nword 3: ");
-
-        // for (int j = 0; j < n; j++)
-        // {
-        //     printf("%X\t", words[j][3]);
-        // }
-        // printf("\n");
 
         // END OF G FUNCTION
 
         // doing xors
 
-        for (int i = 0; i < n; i++)
+        for (i = 0; i < n; i++)
         {
             words[i][0] ^= words[i][3];
         }
 
-        for (int j = 1; j < n; j++)
+        for (i = 1; i < n; i++)
         {
-            for (int i = 0; i < n; i++)
+            for (j = 0; j < n; j++)
             {
                 words[i][j] ^= words[i][j - 1];
             }
@@ -118,18 +99,19 @@ int main()
 
         // WORDS GENERATED
 
-        printf("\nKey for round %d:\n", round);
+        // printf("\nKey for round %d:\n", round);
 
-        for (int i = 0; i < n; i++)
+        for (i = 0; i < n; i++)
         {
-            printf("word %d: ", (round * 4) + i);
-            for (int j = 0; j < n; j++)
+            // printf("word %d: ", (round * 4) + i);
+            for (j = 0; j < n; j++)
             {
-                printf("%X\t", words[j][i]);
+                // printf("%X\t", words[j][i]);
+                expanded[(round * 4) + i][j] = words[j][i];
             }
-            printf("\n");
+            // printf("\n");
         }
     }
 
-    return 0;
+    return expanded;
 }
