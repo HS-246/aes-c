@@ -51,56 +51,54 @@ int main()
 
     for (int round = 1; round <= 10; round++)
     {
-        printf("\nROUND %d :", round);
-
         subBytes(plaintext);
 
-        printf("\nAfter Sub byte:\n");
-        for (int i = 0; i < n; i++)
-        {
-            for (int j = 0; j < n; j++)
-            {
-                printf("%x\t", plaintext[i][j]);
-            }
-            printf("\n");
-        }
+        // printf("\nAfter Sub byte:\n");
+        // for (int i = 0; i < n; i++)
+        // {
+        //     for (int j = 0; j < n; j++)
+        //     {
+        //         printf("%x\t", plaintext[i][j]);
+        //     }
+        //     printf("\n");
+        // }
 
         shiftRows(plaintext);
 
-        printf("\nAfter shift rows:\n");
-        for (int i = 0; i < n; i++)
-        {
-            for (int j = 0; j < n; j++)
-            {
-                printf("%x\t", plaintext[i][j]);
-            }
-            printf("\n");
-        }
+        // printf("\nAfter shift rows:\n");
+        // for (int i = 0; i < n; i++)
+        // {
+        //     for (int j = 0; j < n; j++)
+        //     {
+        //         printf("%x\t", plaintext[i][j]);
+        //     }
+        //     printf("\n");
+        // }
 
         if (round != 10)
             mixColumns(plaintext);
 
-        printf("\nAfter mix columns:\n");
-        for (int i = 0; i < n; i++)
-        {
-            for (int j = 0; j < n; j++)
-            {
-                printf("%x\t", plaintext[i][j]);
-            }
-            printf("\n");
-        }
+        // printf("\nAfter mix columns:\n");
+        // for (int i = 0; i < n; i++)
+        // {
+        //     for (int j = 0; j < n; j++)
+        //     {
+        //         printf("%x\t", plaintext[i][j]);
+        //     }
+        //     printf("\n");
+        // }
 
         addRoundKey(plaintext, keyset, round);
 
-        printf("\nAfter add round key:\n");
-        for (int i = 0; i < n; i++)
-        {
-            for (int j = 0; j < n; j++)
-            {
-                printf("%x\t", plaintext[i][j]);
-            }
-            printf("\n");
-        }
+        // printf("\nAfter add round key:\n");
+        // for (int i = 0; i < n; i++)
+        // {
+        //     for (int j = 0; j < n; j++)
+        //     {
+        //         printf("%x\t", plaintext[i][j]);
+        //     }
+        //     printf("\n");
+        // }
 
         printf("\nAfter round %d:\n", round);
         for (int i = 0; i < n; i++)
