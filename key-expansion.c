@@ -52,6 +52,7 @@ uint8_t **generateKey(uint8_t key[4][4])
     }
 
     // generate new words
+    uint8_t g[4];
 
     for (int round = 1; round <= 10; round++)
     {
@@ -59,27 +60,25 @@ uint8_t **generateKey(uint8_t key[4][4])
 
         // lcs
 
-        int temp;
-        temp = words[0][3];
-        for (i = 0; i < n - 1; i++)
+        for (int i = 0; i < n; i++)
         {
-            words[i][3] = words[i + 1][3];
+            g[i] = words[(i + 1) % n][3];
         }
-        words[n - 1][3] = temp;
 
         // s box substituition
         int x, y;
 
         for (i = 0; i < n; i++)
         {
-            x = words[i][3] / 16;
-            y = words[i][3] % 16;
-            words[i][3] = S[x][y];
+            x = g[i] / 16;
+            y = g[i] % 16;
+            g[i] = S[x][y];
+            // printf("%x\t", words[i][3]);
         }
 
         // rc xor
 
-        words[0][3] ^= RC[round];
+        g[0] = g[0] ^ RC[round];
 
         // END OF G FUNCTION
 
@@ -87,14 +86,14 @@ uint8_t **generateKey(uint8_t key[4][4])
 
         for (i = 0; i < n; i++)
         {
-            words[i][0] ^= words[i][3];
+            words[i][0] = words[i][0] ^ g[i];
         }
 
         for (i = 1; i < n; i++)
         {
             for (j = 0; j < n; j++)
             {
-                words[i][j] ^= words[i][j - 1];
+                words[j][i] = words[j][i] ^ words[j][i - 1];
             }
         }
 

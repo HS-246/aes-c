@@ -21,10 +21,10 @@ int main()
 
     extractBytes(input, plaintext);
 
-    uint8_t key[4][4] = {0x54, 0x68, 0x61, 0x74,
-                         0x73, 0x20, 0x6d, 0x79,
-                         0x20, 0x4b, 0x75, 0x6e,
-                         0x67, 0x20, 0x46, 0x75};
+    uint8_t key[4][4] = {0x54, 0x73, 0x20, 0x67,
+                         0x68, 0x20, 0x4b, 0x20,
+                         0x61, 0x6d, 0x75, 0x46,
+                         0x74, 0x79, 0x6e, 0x75};
     uint8_t **keyset = generateKey(key);
 
     printf("Input plaintext:\n");
@@ -137,11 +137,11 @@ void extractBytes(const char *input, uint8_t output[4][4])
         {
             if (index < len)
             {
-                output[i][j] = (uint8_t)input[index++];
+                output[j][i] = (uint8_t)input[index++];
             }
             else
             {
-                output[i][j] = 'X';
+                output[j][i] = 'X';
             }
         }
     }
