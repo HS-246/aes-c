@@ -41,14 +41,14 @@ uint8_t **generateKey(uint8_t key[4][4])
 
     for (i = 0; i < n; i++)
     {
-        // printf("word %d: ", i);
+        printf("word %d: ", i);
         for (j = 0; j < n; j++)
         {
             words[j][i] = key[j][i];
             expanded[i][j] = words[j][i];
-            // printf("%X\t", key[j][i]);
+            printf("%X\t", key[j][i]);
         }
-        // printf("\n");
+        printf("\n");
     }
 
     // generate new words
@@ -100,17 +100,17 @@ uint8_t **generateKey(uint8_t key[4][4])
 
         // WORDS GENERATED
 
-        // printf("\nKey for round %d:\n", round);
+        printf("\nKey for round %d:\n", round);
 
         for (i = 0; i < n; i++)
         {
-            // printf("word %d: ", (round * 4) + i);
+            printf("word %d: ", (round * 4) + i);
             for (j = 0; j < n; j++)
             {
-                // printf("%X\t", words[j][i]);
+                printf("%X\t", words[j][i]);
                 expanded[(round * 4) + i][j] = words[j][i];
             }
-            // printf("\n");
+            printf("\n");
         }
     }
 

@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include "key-expansion.c"
 #define n 4
+#define CHECK_BIT(var, pos) (((var) >> (pos)) & 1)
 
 void extractBytes(const char *input, uint8_t output[4][4]);
 void addRoundKey(uint8_t plaintext[4][4], uint8_t **keys, int round);
@@ -10,19 +11,21 @@ void subBytes(uint8_t plaintext[4][4]);
 void shiftRows(uint8_t plaintext[4][4]);
 void rotateArray(uint8_t *arr, int d);
 void reverse(uint8_t *arr, int start, int end);
+void mixColumns(uint8_t plaintext[4][4]);
+uint8_t mul(uint8_t fixed, uint8_t hex);
 
 int main()
 {
-    char *input = "thisisapassword";
+    char *input = "Two One Nine Two";
     uint8_t plaintext[4][4];
 
     extractBytes(input, plaintext);
 
-    uint8_t key[4][4] = {0x02, 0xf2, 0x42, 0x01,
-                         0x12, 0x03, 0x55, 0x66,
-                         0x13, 0xa6, 0x8b, 0x92,
-                         0xe1, 0x8c, 0x11, 0x99};
-    uint8_t **expanded = generateKey(key);
+    uint8_t key[4][4] = {0x54, 0x68, 0x61, 0x74,
+                         0x73, 0x20, 0x6d, 0x79,
+                         0x20, 0x4b, 0x75, 0x6e,
+                         0x67, 0x20, 0x46, 0x75};
+    uint8_t **keyset = generateKey(key);
 
     printf("Input plaintext:\n");
     for (int i = 0; i < n; i++)
@@ -34,7 +37,7 @@ int main()
         printf("\n");
     }
 
-    addRoundKey(plaintext, expanded, 0);
+    addRoundKey(plaintext, keyset, 0);
 
     printf("\nAfter initial add round key:\n");
     for (int i = 0; i < n; i++)
@@ -46,27 +49,78 @@ int main()
         printf("\n");
     }
 
-    subBytes(plaintext);
-
-    printf("\nAfter Sub Bytes:\n");
-    for (int i = 0; i < n; i++)
+    for (int round = 1; round <= 10; round++)
     {
-        for (int j = 0; j < n; j++)
+        printf("\nROUND %d :", round);
+
+        subBytes(plaintext);
+
+        printf("\nAfter Sub byte:\n");
+        for (int i = 0; i < n; i++)
         {
-            printf("%x\t", plaintext[i][j]);
+            for (int j = 0; j < n; j++)
+            {
+                printf("%x\t", plaintext[i][j]);
+            }
+            printf("\n");
         }
-        printf("\n");
+
+        shiftRows(plaintext);
+
+        printf("\nAfter shift rows:\n");
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                printf("%x\t", plaintext[i][j]);
+            }
+            printf("\n");
+        }
+
+        if (round != 10)
+            mixColumns(plaintext);
+
+        printf("\nAfter mix columns:\n");
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                printf("%x\t", plaintext[i][j]);
+            }
+            printf("\n");
+        }
+
+        addRoundKey(plaintext, keyset, round);
+
+        printf("\nAfter add round key:\n");
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                printf("%x\t", plaintext[i][j]);
+            }
+            printf("\n");
+        }
+
+        printf("\nAfter round %d:\n", round);
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                printf("%x\t", plaintext[i][j]);
+            }
+            printf("\n");
+        }
     }
 
-    shiftRows(plaintext);
-    printf("\nAfter shift rows:\n");
+    printf("Final Encrypted text: ");
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < n; j++)
         {
-            printf("%x\t", plaintext[i][j]);
+            printf("%c", plaintext[i][j]);
         }
-        printf("\n");
+        // printf("\n");
     }
 
     return 0;
@@ -167,4 +221,43 @@ void reverse(uint8_t *arr, int start, int end)
         start++;
         end--;
     }
+}
+
+void mixColumns(uint8_t plaintext[4][4])
+{
+    // mixing columns like meth
+    uint8_t temp[4][4], row = 0, col = 0;
+    uint8_t fixed[4][4] = {2, 3, 1, 1, 1, 2, 3, 1, 1, 1, 2, 3, 3, 1, 1, 2};
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            temp[i][j] = 0;
+            for (int k = 0; k < n; k++)
+            {
+                temp[i][j] = temp[i][j] ^ mul(fixed[i][k], plaintext[k][j]);
+            }
+        }
+    }
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            plaintext[i][j] = temp[i][j];
+        }
+    }
+}
+
+uint8_t mul(uint8_t fixed, uint8_t hex)
+{
+    if (fixed == 1)
+        return hex;
+    if (fixed == 3)
+        return hex ^ mul(2, hex);
+
+    uint8_t shitfed = hex << 1;
+    if (CHECK_BIT(hex, 7))
+        shitfed = shitfed ^ 0x1b;
+    return shitfed;
 }
