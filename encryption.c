@@ -21,11 +21,7 @@ int main()
 
     extractBytes(input, plaintext);
 
-    uint8_t key[4][4] = {0x54, 0x73, 0x20, 0x67,
-                         0x68, 0x20, 0x4b, 0x20,
-                         0x61, 0x6d, 0x75, 0x46,
-                         0x74, 0x79, 0x6e, 0x75};
-    uint8_t **keyset = generateKey(key);
+    uint8_t **keyset = generateKey();
 
     printf("Input plaintext:\n");
     for (int i = 0; i < n; i++)
@@ -99,15 +95,17 @@ int main()
         //     }
         //     printf("\n");
         // }
-
-        printf("\nAfter round %d:\n", round);
-        for (int i = 0; i < n; i++)
+        if (round == 10)
         {
-            for (int j = 0; j < n; j++)
+            printf("\nAfter round %d:\n", round);
+            for (int i = 0; i < n; i++)
             {
-                printf("%x\t", plaintext[i][j]);
+                for (int j = 0; j < n; j++)
+                {
+                    printf("%x\t", plaintext[i][j]);
+                }
+                printf("\n");
             }
-            printf("\n");
         }
     }
 
