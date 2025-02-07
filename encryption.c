@@ -1,25 +1,25 @@
 #include <stdio.h>
-#include <string.h>
 #include <stdint.h>
 #include "key-expansion.c"
 #define n 4
 #define CHECK_BIT(var, pos) (((var) >> (pos)) & 1)
 
-void extractBytes(const char *input, uint8_t output[4][4]);
+void extractBytes(const uint8_t input[], size_t len, uint8_t output[4][4]);
 void addRoundKey(uint8_t plaintext[4][4], uint8_t **keys, int round);
 void subBytes(uint8_t plaintext[4][4]);
 void shiftRows(uint8_t plaintext[4][4]);
 void rotateArray(uint8_t *arr, int d);
 void reverse(uint8_t *arr, int start, int end);
 void mixColumns(uint8_t plaintext[4][4]);
-uint8_t mul(uint8_t fixed, uint8_t hex);
+uint8_t mul(uint8_t a, uint8_t b);
 
 int main()
 {
-    char *input = "Two One Nine Two";
+    uint8_t input[] = "Two One Nine Two";
     uint8_t plaintext[4][4];
+    size_t in_len = sizeof(input) / sizeof(input[0]);
 
-    extractBytes(input, plaintext);
+    extractBytes(input, in_len, plaintext);
 
     uint8_t **keyset = generateKey();
 
@@ -61,40 +61,13 @@ int main()
 
         shiftRows(plaintext);
 
-        // printf("\nAfter shift rows:\n");
-        // for (int i = 0; i < n; i++)
-        // {
-        //     for (int j = 0; j < n; j++)
-        //     {
-        //         printf("%x\t", plaintext[i][j]);
-        //     }
-        //     printf("\n");
-        // }
-
         if (round != 10)
+        {
             mixColumns(plaintext);
-
-        // printf("\nAfter mix columns:\n");
-        // for (int i = 0; i < n; i++)
-        // {
-        //     for (int j = 0; j < n; j++)
-        //     {
-        //         printf("%x\t", plaintext[i][j]);
-        //     }
-        //     printf("\n");
-        // }
+        }
 
         addRoundKey(plaintext, keyset, round);
 
-        // printf("\nAfter add round key:\n");
-        // for (int i = 0; i < n; i++)
-        // {
-        //     for (int j = 0; j < n; j++)
-        //     {
-        //         printf("%x\t", plaintext[i][j]);
-        //     }
-        //     printf("\n");
-        // }
         if (round == 10)
         {
             printf("\nAfter round %d:\n", round);
@@ -122,9 +95,8 @@ int main()
     return 0;
 }
 
-void extractBytes(const char *input, uint8_t output[4][4])
+void extractBytes(const uint8_t input[], size_t len, uint8_t output[4][4])
 {
-    int len = strlen(input);
     int index = 0;
 
     for (int i = 0; i < n; i++)
@@ -133,7 +105,7 @@ void extractBytes(const char *input, uint8_t output[4][4])
         {
             if (index < len)
             {
-                output[j][i] = (uint8_t)input[index++];
+                output[j][i] = input[index++];
             }
             else
             {
@@ -190,13 +162,9 @@ void subBytes(uint8_t plaintext[4][4])
 
 void shiftRows(uint8_t plaintext[4][4])
 {
-    int temp;
-
-    for (int i = 1; i < n; i++)
-    {
-        uint8_t *arr = plaintext[i];
-        rotateArray(plaintext[i], i);
-    }
+    rotateArray(plaintext[1], 1);
+    rotateArray(plaintext[2], 2);
+    rotateArray(plaintext[3], 3);
 }
 
 void rotateArray(uint8_t *arr, int d)
@@ -247,13 +215,17 @@ void mixColumns(uint8_t plaintext[4][4])
 
 uint8_t mul(uint8_t fixed, uint8_t hex)
 {
-    if (fixed == 1)
-        return hex;
-    if (fixed == 3)
-        return hex ^ mul(2, hex);
-
-    uint8_t shitfed = hex << 1;
-    if (CHECK_BIT(hex, 7))
-        shitfed = shitfed ^ 0x1b;
-    return shitfed;
+    uint8_t p = 0;
+    uint8_t high_bit_set;
+    for (int i = 0; i < 8; i++)
+    {
+        if (hex & 1)
+            p ^= fixed;
+        high_bit_set = (fixed & 0x80);
+        fixed <<= 1;
+        if (high_bit_set)
+            fixed ^= 0x1b; // x^8 + x^4 + x^3 + x + 1
+        hex >>= 1;
+    }
+    return p;
 }

@@ -15,8 +15,7 @@ void reverse(uint8_t *arr, int start, int end);
 void invMixColumns(uint8_t ciphertext[4][4]);
 void invMixKey(uint8_t **keys, int round);
 uint8_t bigmul(uint8_t fixed, uint8_t hex);
-// uint8_t mul(uint8_t fixed, uint8_t hex);
-uint8_t mul(uint8_t a, uint8_t b);
+uint8_t mul(uint8_t fixed, uint8_t hex);
 
 int main()
 {
@@ -95,39 +94,6 @@ void extractBytes(const char *input, uint8_t output[4][4])
             }
         }
     }
-}
-
-char *aes_matrix_to_string(uint8_t state[4][4])
-{
-    // Create buffer (16 bytes for AES block + 1 for null terminator)
-    size_t original_len = 16;
-    char *output = malloc(17);
-    memset(output, 0, 17);
-
-    // Read matrix in column-major order
-    for (int col = 0; col < 4; col++)
-    {
-        for (int row = 0; row < 4; row++)
-        {
-            int index = col * 4 + row;
-            if (index < 16)
-            {
-                output[index] = (char)state[row][col];
-            }
-        }
-    }
-
-    // Handle padding (if original data was <16 bytes)
-    if (original_len < 16)
-    {
-        uint8_t pad_value = output[15];
-        if (pad_value <= 16)
-        {
-            output[16 - pad_value] = '\0';
-        }
-    }
-
-    return output;
 }
 
 void addRoundKey(uint8_t ciphertext[4][4], uint8_t **keys, int round)
@@ -226,19 +192,19 @@ void invMixColumns(uint8_t ciphertext[4][4])
     memcpy(ciphertext, temp, 16);
 }
 
-uint8_t mul(uint8_t a, uint8_t b)
+uint8_t mul(uint8_t fixed, uint8_t hex)
 {
     uint8_t p = 0;
     uint8_t high_bit_set;
     for (int i = 0; i < 8; i++)
     {
-        if (b & 1)
-            p ^= a;
-        high_bit_set = (a & 0x80);
-        a <<= 1;
+        if (hex & 1)
+            p ^= fixed;
+        high_bit_set = (fixed & 0x80);
+        fixed <<= 1;
         if (high_bit_set)
-            a ^= 0x1B; // x^8 + x^4 + x^3 + x + 1
-        b >>= 1;
+            fixed ^= 0x1b; // x^8 + x^4 + x^3 + x + 1
+        hex >>= 1;
     }
     return p;
 }
