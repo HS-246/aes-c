@@ -5,27 +5,29 @@
 #define n 4
 #define CHECK_BIT(var, pos) (((var) >> (pos)) & 1)
 
-void extractBytes(const char *input, uint8_t output[4][4]);
-char *aes_matrix_to_string(uint8_t state[4][4]);
 void addRoundKey(uint8_t ciphertext[4][4], uint8_t **keys, int round);
 void invSubBytes(uint8_t ciphertext[4][4]);
 void invShiftRows(uint8_t ciphertext[4][4]);
 void rotateArray(uint8_t *arr, int d);
 void reverse(uint8_t *arr, int start, int end);
 void invMixColumns(uint8_t ciphertext[4][4]);
-void invMixKey(uint8_t **keys, int round);
-uint8_t bigmul(uint8_t fixed, uint8_t hex);
 uint8_t mul(uint8_t fixed, uint8_t hex);
 
 int main()
 {
 
-    char *input = "Two One Nine Two";
+    //     "Two One Nine"
+    // uint8_t ciphertext[4][4] = {
+    //     {0x99, 0xd0, 0x29, 0x23},
+    //     {0x95, 0x75, 0xe5, 0xae},
+    //     {0x3b, 0xef, 0xb6, 0x3c},
+    //     {0x0f, 0x4a, 0xf5, 0xa3}};
+
+    // "Two One Nine Two"
     uint8_t ciphertext[4][4] = {0x29, 0x57, 0x40, 0x1a,
                                 0xc3, 0x14, 0x22, 0x2,
                                 0x50, 0x20, 0x99, 0xd7,
                                 0x5f, 0xf6, 0xb3, 0x3a};
-    // extractBytes(input, ciphertext);
 
     uint8_t **keyset = generateKey();
 
@@ -61,39 +63,21 @@ int main()
             invMixColumns(ciphertext);
         }
     }
-
+    char decrypted[16];
+    int index = 0;
     printf("Final Decrypted text: \n");
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < n; j++)
         {
-            printf("%x\t", ciphertext[i][j]);
+            // printf("%c", ciphertext[j][i]);
+            decrypted[index++] = ciphertext[j][i];
         }
-        printf("\n");
+        // printf("\n");
     }
+    printf("%sEOP\n", decrypted);
 
     return 0;
-}
-
-void extractBytes(const char *input, uint8_t output[4][4])
-{
-    int len = strlen(input);
-    int index = 0;
-
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-        {
-            if (index < len)
-            {
-                output[j][i] = (uint8_t)input[index++];
-            }
-            else
-            {
-                output[j][i] = 'X';
-            }
-        }
-    }
 }
 
 void addRoundKey(uint8_t ciphertext[4][4], uint8_t **keys, int round)

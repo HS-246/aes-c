@@ -15,9 +15,15 @@ uint8_t mul(uint8_t a, uint8_t b);
 
 int main()
 {
-    uint8_t input[] = "Two One Nine Two";
+    uint8_t input[] = "Two One Nine two";
     uint8_t plaintext[4][4];
     size_t in_len = sizeof(input) / sizeof(input[0]);
+
+    for (int i = 0; i < in_len; i++)
+    {
+        printf("%c%d ", input[i], input[i]);
+    }
+    printf("\n");
 
     extractBytes(input, in_len, plaintext);
 
@@ -82,15 +88,15 @@ int main()
         }
     }
 
-    printf("Final Encrypted text: ");
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-        {
-            printf("%c", plaintext[i][j]);
-        }
-        // printf("\n");
-    }
+    // printf("Final Encrypted text: \n");
+    // for (int i = 0; i < n; i++)
+    // {
+    //     for (int j = 0; j < n; j++)
+    //     {
+    //         printf("%c %d  ", plaintext[j][i], plaintext[j][i]);
+    //     }
+    //     // printf("\n");
+    // }
 
     return 0;
 }
@@ -109,7 +115,7 @@ void extractBytes(const uint8_t input[], size_t len, uint8_t output[4][4])
             }
             else
             {
-                output[j][i] = 'X';
+                output[j][i] = 0x00;
             }
         }
     }
